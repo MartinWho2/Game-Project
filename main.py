@@ -11,9 +11,18 @@ def main():
 
     while game.run:
         clock.tick(60)
-        game.update()
-        pygame.display.flip()
-        game.events()
-
+        if not game.pause:
+            game.update()
+            pygame.display.flip()
+            game.events()
+        else:
+            if not game.s_l:
+                game.menu.menu()
+                pygame.display.flip()
+                game.menu_events()
+            else:
+                game.save_load()
+                pygame.display.flip()
+                game.save_load_events()
 
 main()

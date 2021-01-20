@@ -5,20 +5,32 @@ from Langues import Language
 from jauge import Jauge
 from images import Images
 from background import Background
-
-
+from Menu import Menu
+from Encode import encode, decode
 class Game:
     def __init__(self, win):
         self.bg = Background(win, Language())
+        self.menu = Menu(self.bg)
         self.shop_open = False
         self.shop = Shop(self.bg)
         self.group = pygame.sprite.Group()
-        self.gold = Jauge(pygame.image.load('Images/Pièce.png'), 1, 100000000, self.bg.h, self.bg.w)
+        self.gold = Jauge(pygame.image.load('Images/Pièce.png'), 1, 100, self.bg.h, self.bg.w)
         self.stuff = Jauge(pygame.image.load('Images/Matériel.png'), 2, 50000000, self.bg.h, self.bg.w)
         self.keys = {}
         self.win = win
+
         self.run = True
+        self.pause = False
+        self.s_l = False
+        self.s_l_choice = False
+
         self.buttons = (0, 0, 0)
+        self.font_1 = pygame.font.SysFont('comicsans',int(self.bg.w/10))
+
+        self.white = (255,255,255)
+        self.green = (0,255,0)
+        self.blue = (0,0,255)
+        self.red = (255,0,0)
 
     def update(self):
         self.buttons = pygame.mouse.get_pressed(num_buttons=3)
@@ -53,6 +65,84 @@ class Game:
         if self.shop_open:
             self.shop.draw_shop(self.win, self.bg.w, self.bg.h)
 
+    def save_load(self):
+        self.win.fill(self.red)
+        pygame.draw.rect(self.win, self.blue, pygame.Rect(0, 0, int(self.bg.w/2), self.bg.h))
+        save = self.menu.font.render("SAVE", True, (0, 0, 0))
+        load = self.menu.font.render("LOAD", True, (0, 0, 0))
+        saveRect, loadRect = save.get_rect(), load.get_rect()
+        saveRect.center, loadRect.center = (int(self.bg.w/4),int(self.bg.h/2)),(int(self.bg.w * 3 / 4),int(self.bg.h/2))
+        self.win.blit(save, saveRect)
+        self.win.blit(load, loadRect)
+
+    def save_load_events(self):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                self.run = False
+                pygame.quit()
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                x = pygame.mouse.get_pos()[0]
+                # False to save and True to load
+                if x < self.bg.w/2:
+                    self.s_l_choice = False
+                else:
+                    self.s_l_choice = True
+            if e.type == pygame.MOUSEBUTTONUP:
+                x = pygame.mouse.get_pos()[0]
+                if self.s_l_choice and x > self.bg.w/2:
+                    self.gold.quantity = int(decode())
+                    self.gold.add(0,self.bg.w)
+                    self.s_l = False
+                    self.win.fill((0,0,0))
+                elif not self.s_l_choice and x < self.bg.w/2:
+                    encode(str(self.gold.quantity))
+                    self.s_l = False
+                    self.win.fill((0,0,0))
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    self.s_l = False
+
+
+
+
+    def menu_events(self):
+        self.win.blit(self.menu.resume, self.menu.resumeRect)
+        self.win.blit(self.menu.save, self.menu.saveRect)
+        self.win.blit(self.menu.quit, self.menu.quitRect)
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                self.run = False
+                pygame.quit()
+            if e.type == pygame.MOUSEMOTION:
+                if not self.menu.clicked:
+                    x, y = pygame.mouse.get_pos()
+                    for rectangle in self.menu.rects:
+                        if rectangle.collidepoint(x, y):
+                            self.menu.selected = self.menu.rects.index(rectangle)
+                            setattr(self.menu, 'color_' + str(self.menu.selected), self.green)
+                            setattr(self.menu, 'color_' + str((self.menu.selected - 1) % 3), self.white)
+                            setattr(self.menu, 'color_' + str((self.menu.selected - 2) % 3), self.white)
+                            self.menu.event_happens = True
+
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                x,y = pygame.mouse.get_pos()
+                if self.menu.rects[self.menu.selected].collidepoint(x,y):
+                    self.menu.clicked = self.menu.selected+1
+            if e.type == pygame.MOUSEBUTTONUP:
+                x,y = pygame.mouse.get_pos()
+                if self.menu.rects[self.menu.clicked-1].collidepoint(x, y):
+                    if self.menu.clicked == 1:
+                        self.pause = False
+                    if self.menu.clicked == 2:
+                        self.s_l = True
+                    if self.menu.clicked == 3:
+                        self.run = False
+                        pygame.quit()
+                self.menu.clicked = 0
+
+
+
+
     def events(self):
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -61,10 +151,10 @@ class Game:
             elif e.type == pygame.KEYDOWN:
                 self.keys[e.key] = True
                 if e.key == pygame.K_SPACE:
-                    self.stuff.add(1000, self.bg.w)
+                    self.gold.add(1000, self.bg.w)
                 if e.key == pygame.K_ESCAPE:
-                    self.run = False
-                    pygame.quit()
+                    self.pause = True
+                    self.win.fill((0,0,0))
                 if e.key == pygame.K_k:
                     self.shop_open = not self.shop_open
                     self.shop.buying = False

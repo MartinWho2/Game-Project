@@ -1,13 +1,11 @@
 import random
 
-dictionary = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10, 'k': 11, 'l': 12,
-              'm': 13, 'n': 14, 'o': 15, 'p': 16,
-              'q': 17, 'r': 18, 's': 19, 't': 20, 'u': 21, 'v': 22, 'w': 23, 'x': 24, 'y': 25, 'z': 26}
 
 
-def encode(text, FILE):
 
-    f = open(FILE + '.txt', 'w')
+def encode(text):
+
+    f = open('DO_NOT_MODIFY.txt', 'w')
     # Key = CX + 10D + E
     key = (random.randint(3, 7), random.randint(1, 9), random.randint(1, 9))
     print('KEY = ', key)
@@ -30,9 +28,9 @@ def encode(text, FILE):
     f.close()
 
 
-def decode(File):
+def decode():
     try:
-        f = open(File + '.txt', 'r')
+        f = open('DO_NOT_MODIFY.txt', 'r')
         go = True
     except:
         print("This file does not exist. Therefore you cannot decode it.")
@@ -52,23 +50,22 @@ def decode(File):
                 char = (pos - int(key[2]) - 10 * int(key[1])) / int(key[0])
                 message += chr(int(char))
             f.close()
-            print(message)
             return message
         except:
             print("Your save is corrupted. You shouldn't have modified it.")
 
 
-while True:
-    choice = input("""What do you want to do:
-1 : Encode
-2 : Decode
-""")
-    if choice == "1":
-        file = input("Which file do you want to use ? ")
-        text = input("Type your text : ")
-        encode(text, file)
-    if choice == "2":
-        file = input("Which file do you want to decode ? ")
-        decode(file)
-    elif choice == 'STOP' or choice == 'stop':
-        break
+#while True:
+#    choice = input("""What do you want to do:
+#1 : Encode
+#2 : Decode
+#""")
+#    if choice == "1":
+#        file = input("Which file do you want to use ? ")
+#        text = input("Type your text : ")
+#        encode(text, file)
+#    if choice == "2":
+#        file = input("Which file do you want to decode ? ")
+#        decode(file)
+#    elif choice == 'STOP' or choice == 'stop':
+#        break
