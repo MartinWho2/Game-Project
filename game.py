@@ -204,8 +204,9 @@ class Game:
             elif e.type == pygame.MOUSEWHEEL:
                 rx, ry = pygame.mouse.get_pos()
                 if self.shop_open is False or pygame.mouse.get_pos()[0] > self.bg.w / 4:
-                    factor = e.y * 0.225 + 1.025
-                    if not (self.bg.zoom > 3.5 and factor > 1) and not (self.bg.zoom < 0.2 and factor < 1):
-                        self.bg.zoom = self.bg.zoom * factor
-                        self.bg.x = rx + (self.bg.x - rx) * factor
-                        self.bg.y = ry + (self.bg.y - ry) * factor
+                    for i in range(int(math.fabs(e.y))):
+                        factor = e.y / math.fabs(e.y) * 0.225 + 1.025
+                        if not (self.bg.zoom > 3.5 and factor > 1) and not (self.bg.zoom < 0.2 and factor < 1):
+                            self.bg.zoom = self.bg.zoom * factor
+                            self.bg.x = rx + (self.bg.x - rx) * factor
+                            self.bg.y = ry + (self.bg.y - ry) * factor

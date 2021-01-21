@@ -8,7 +8,6 @@ def encode(text):
     f = open('DO_NOT_MODIFY.txt', 'w')
     # Key = CX + 10D + E
     key = (random.randint(3, 7), random.randint(1, 9), random.randint(1, 9))
-    print('KEY = ', key)
     errors = (random.randint(100, 999), random.randint(0, 9), random.randint(10000, 99999), key[1])
     code = str(errors[0]) + str(key[0]) + str(errors[1]) + str(key[1]) + str(errors[2]) + str(key[2]) + str(errors[3])
 
