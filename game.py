@@ -20,6 +20,7 @@ class Game:
         self.stuff = Jauge(pygame.image.load('Images/Matériel.png'), 2, 50000000, self.bg.h, self.bg.w)
         self.keys = {}
         self.win = win
+        self.placeable=True
 
         self.run = True
         self.pause = False
@@ -53,8 +54,12 @@ class Game:
             self.bg.x += v.x
             self.bg.y += v.y
         # move and display all sprites and background
+        self.placeable=True
         for sprite in self.group:
             sprite.replace()
+            if pygame.Rect.colliderect(sprite.rect,self.shop.rect_buying):
+                self.placeable=False
+        
 
         self.win.fill((0, 0, 0))
         self.win.blit(pygame.transform.scale(self.bg.image, (
@@ -66,6 +71,7 @@ class Game:
         self.gold.display(self.win)
         if self.shop_open:
             self.shop.draw_shop(self.win, self.bg.w, self.bg.h)
+        
 
     def save_load(self):
         self.win.fill(self.red)
@@ -175,7 +181,7 @@ class Game:
                     egal = False
                     if self.shop.buying and self.gold.quantity + self.shop.prices["Maison"][
                         0] >= 0 and self.stuff.quantity + \
-                            self.shop.prices["Maison"][1] >= 0:
+                            self.shop.prices["Maison"][1] >= 0 and self.placeable:
                         surface = pygame.image.load('Images/Maison.png')
                         a = Images(surface, (self.shop.buying_x - self.bg.x) / self.bg.zoom,
                                    (self.shop.buying_y - self.bg.y) / self.bg.zoom, self.bg)

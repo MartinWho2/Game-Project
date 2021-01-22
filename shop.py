@@ -66,4 +66,8 @@ class Shop:
             self.buying_y = round(
                 (pygame.mouse.get_pos()[1] - image.get_height() / 2) / (25 * self.bg.zoom)) * 25 * self.bg.zoom + (
                                         (self.bg.y / (25 * self.bg.zoom)) % 1) * 25 * self.bg.zoom
+            self.rect_buying=image.get_rect()
+            self.rect_buying.x=self.buying_x
+            self.rect_buying.y=self.buying_y
             win.blit(image, (self.buying_x, self.buying_y))
+            
