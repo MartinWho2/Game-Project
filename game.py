@@ -14,13 +14,14 @@ class Game:
         self.bg = Background(win, Language())
         self.menu = Menu(self.bg)
         self.shop_open = False
+        self.placeable=True
         self.shop = Shop(self.bg)
         self.group = pygame.sprite.Group()
-        self.gold = Jauge(pygame.image.load('Images/Pièce.png'), 1, 100, self.bg.h, self.bg.w)
+        self.gold = Jauge(pygame.image.load('Images/Pièce.png'), 1, 10000, self.bg.h, self.bg.w)
         self.stuff = Jauge(pygame.image.load('Images/Matériel.png'), 2, 50000000, self.bg.h, self.bg.w)
         self.keys = {}
         self.win = win
-        self.placeable=True
+        self.tabs = pygame.transform.scale(pygame.image.load('Images/Onglets.png'),(int(36*(self.bg.h/1080)),int(1080 * (self.bg.h/1080))))
 
         self.run = True
         self.pause = False
@@ -34,6 +35,8 @@ class Game:
         self.green = (0, 255, 0)
         self.blue = (0, 0, 255)
         self.red = (255, 0, 0)
+        
+        self.tabs_texts=pygame.transform.rotate((self.font_1.render("Hey", True, self.red)), 90)
 
     def update(self):
         self.buttons = pygame.mouse.get_pressed(num_buttons=3)
@@ -54,13 +57,12 @@ class Game:
             self.bg.x += v.x
             self.bg.y += v.y
         # move and display all sprites and background
-        self.placeable=True
+        self.placeable = True
         for sprite in self.group:
             sprite.replace()
             if pygame.Rect.colliderect(sprite.rect,self.shop.rect_buying):
-                self.placeable=False
+                self.placeable = False
         
-
         self.win.fill((0, 0, 0))
         self.win.blit(pygame.transform.scale(self.bg.image, (
             math.floor(self.bg.image.get_width() * self.bg.zoom),
@@ -69,8 +71,10 @@ class Game:
         self.group.draw(self.win)
         self.stuff.display(self.win)
         self.gold.display(self.win)
+        self.win.blit(self.tabs,(0,0))
+        self.win.blit(self.tabs_texts, (100,100) )
         if self.shop_open:
-            self.shop.draw_shop(self.win, self.bg.w, self.bg.h)
+            self.shop.draw_shop(self.win, self.bg.w, self.bg.h, self.placeable)
         
 
     def save_load(self):
@@ -179,28 +183,36 @@ class Game:
                 if e.button == 1:
                     pos = pygame.mouse.get_pos()
                     egal = False
-                    if self.shop.buying and self.gold.quantity + self.shop.prices["Maison"][
-                        0] >= 0 and self.stuff.quantity + \
-                            self.shop.prices["Maison"][1] >= 0 and self.placeable:
-                        surface = pygame.image.load('Images/Maison.png')
-                        a = Images(surface, (self.shop.buying_x - self.bg.x) / self.bg.zoom,
-                                   (self.shop.buying_y - self.bg.y) / self.bg.zoom, self.bg)
+                    if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
+                        surface = self.shop.what_buying[0]
+                        a = Images(surface,(self.shop.buying_x-self.bg.x)/self.bg.zoom,(self.shop.buying_y-self.bg.y)/self.bg.zoom,self.bg)
                         self.group.add(a)
-                        self.gold.add(self.shop.prices["Maison"][0], self.bg.w)
-                        self.stuff.add(self.shop.prices["Maison"][1], self.bg.w)
+                        self.gold.add(self.shop.what_buying[2][0], self.bg.w)
+                        self.stuff.add(self.shop.what_buying[2][1], self.bg.w)
                         self.shop.buying = False
                         egal = True
                         self.shop.bought = 0
-                        # print(self.shop.buying_x, self.shop.buying_y, self.bg.x / self.bg.zoom,
-                        #      self.bg.y / self.bg.zoom)
+                        
                     if self.shop_open and not self.shop.buying and not egal:
-                        for i in range(0, 4):
-                            if self.shop.tabs[i].collidepoint(pos[0], pos[1]):
-                                self.shop.tab_open = i
-                        for i in range(0, 6):
-                            if self.shop.rect_list[i].collidepoint(pos[0], pos[1]) and not self.shop.buying:
+                        if pos[0] <= self.bg.w/4:
+                            continu = True
+                            for i in range(0, 4):
+                                if self.shop.tabs[i].collidepoint(pos[0], pos[1]):
+                                    self.shop.tab_open = i
+                                    continu = False
+                            if continu:        
+                                row = math.ceil((pos[1] - self.bg.h/14) / (self.bg.w/8))
+                                x = 2 * row -2
+                                if pos[0]<=self.bg.w/8: x += 1
+                                else: x+=2
+                                self.shop.what_buying = (self.shop.buying_image[int(x)],self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
                                 self.shop.buying = True
-
+                    if not self.shop_open and pos[0] <= self.bg.w * 3 / 160:
+                        y = pos[1]
+                        if y <= self.bg.h/4 : self.shop_open = True
+                        elif y <= self.bg.h/2 : pass
+                        elif y <= self.bg.h*3/4: pass
+                        else: pass
             elif e.type == pygame.MOUSEMOTION:
                 mx, my = pygame.mouse.get_rel()
                 if self.buttons[0] and (self.shop_open is False or pygame.mouse.get_pos()[0] > self.bg.w / 4):

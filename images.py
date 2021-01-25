@@ -18,5 +18,6 @@ class Images(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.original_image, (
             math.floor(self.original_image.get_width() * self.bg.zoom),
             math.floor(self.original_image.get_height() * self.bg.zoom)))
+        self.rect=self.image.get_rect()
         self.rect.x = math.floor(self.bg.x + self.bg.zoom * self.gap_x)
         self.rect.y = math.floor(self.bg.y + self.bg.zoom * self.gap_y)
