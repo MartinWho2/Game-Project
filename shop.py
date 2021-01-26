@@ -85,4 +85,11 @@ class Shop:
                 imp_action_image=pygame.transform.scale(original_imp_action_image,(image.get_width(),image.get_height()))
                 win.blit(imp_action_image,(self.buying_x,self.buying_y))
 
-            
+
+    def check_collision_tabs(self,tab_nmbr,pos):
+        p = self.bg.prop_h
+        if pos[1] <= p * (35 + 270 * tab_nmbr) and pos[1] <= pos[0] :
+            return False
+        elif pos[1] >= p * (235 + 270 * tab_nmbr) and pos[1] - 235 * p >= 35 * p - pos[0]:
+           return False
+        else: return True

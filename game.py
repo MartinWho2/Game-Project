@@ -208,10 +208,11 @@ class Game:
                                 self.shop.what_buying = (self.shop.buying_image[int(x)],self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
                                 self.shop.buying = True
                     if not self.shop_open and pos[0] <= self.bg.w * 3 / 160:
-                        y = pos[1]
-                        if y <= self.bg.h/4 : self.shop_open = True
-                        elif y <= self.bg.h/2 : pass
-                        elif y <= self.bg.h*3/4: pass
+                        if pos[1] <= self.bg.h/4 :
+                            if self.shop.check_collision_tabs(0,pos):
+                                self.shop_open = True
+                        elif pos[1] <= self.bg.h/2 : pass
+                        elif pos[1] <= self.bg.h*3/4: pass
                         else: pass
             elif e.type == pygame.MOUSEMOTION:
                 mx, my = pygame.mouse.get_rel()
