@@ -7,6 +7,8 @@ The aim of the project is to learn how to code in python with pygame. <br>
 More informations are available with the file Game_ideas.docx <br>
 If you have any suggestions, we would be very happy to hear them. <br>
 
+## setup
+
 ```
 Your Code here for installing
 ```
