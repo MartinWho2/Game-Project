@@ -5,12 +5,7 @@ import math
 class Shop:
     def __init__(self, bg):
         self.surface = pygame.rect.Rect(0, 0, bg.w / 4, bg.h)
-        self.tabs_name = bg.l.vocab[0], bg.l.vocab[1], bg.l.vocab[2], bg.l.vocab[3]
-        self.tabs = [pygame.rect.Rect(0, 0, bg.w / (len(self.tabs_name) * 4), bg.h / 14),
-                     pygame.rect.Rect(bg.w / (len(self.tabs_name) * 4), 0, bg.w / (len(self.tabs_name) * 4), bg.h / 14),
-                     pygame.rect.Rect(bg.w / (len(self.tabs_name) * 2), 0, bg.w / (len(self.tabs_name) * 4), bg.h / 14),
-                     pygame.rect.Rect(bg.w / (len(self.tabs_name) * 4 / 3), 0, bg.w / (len(self.tabs_name) * 4),
-                                      bg.h / 14)]
+        self.tabs = [pygame.rect.Rect(0, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 12, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 6, 0, bg.w / 12, bg.h / 14)]
         self.shop_tabs = []
         self.tab_open = 0
         self.shop_tab_open = 0
@@ -57,12 +52,11 @@ class Shop:
                 pygame.draw.rect(win, (150, 150, 150), self.tabs[0])
                 pygame.draw.rect(win, (160, 160, 160), self.tabs[1])
                 pygame.draw.rect(win, (150, 150, 150), self.tabs[2])
-                pygame.draw.rect(win, (150, 160, 150), self.tabs[3])
                 font = pygame.font.SysFont("arial", round(w / 85))
-                for i in range(0, 4):
-                    text = font.render(self.tabs_name[i], True, pygame.Color('black'))
+                for i in range(3):
+                    text = font.render(self.bg.l.vocab[i+4], True, pygame.Color('black'))
                     text_rect = text.get_rect()
-                    text_rect.center = (i * w / (len(self.tabs_name) * 4) + w / (len(self.tabs_name) * 8), h / 28)
+                    text_rect.center = (i * w / 12 + w / 24), h / 28
                     win.blit(text, text_rect)
                 
 
@@ -85,11 +79,15 @@ class Shop:
                 imp_action_image=pygame.transform.scale(original_imp_action_image,(image.get_width(),image.get_height()))
                 win.blit(imp_action_image,(self.buying_x,self.buying_y))
 
-
+    def open(self,win):
+        for i in range (1,51):
+            rect = pygame.rect.Rect(0,0,round(self.bg.w/200*i),self.bg.h)
+            print(rect)
+            pygame.draw.rect(win,(150,150,150),rect)
     def check_collision_tabs(self,tab_nmbr,pos):
         p = self.bg.prop_h
         if pos[1] <= p * (35 + 270 * tab_nmbr) and pos[1] <= pos[0] :
             return False
         elif pos[1] >= p * (235 + 270 * tab_nmbr) and pos[1] - 235 * p >= 35 * p - pos[0]:
            return False
-        else: return True
+        else: return tab_nmbr + 1

@@ -12,4 +12,4 @@ class Language:
             self.vocab = ["Shop", "Projects", "Research", "Doctrins", "Army", "Infrastructures", "Resources"]
         if self.language == 3:
             self.vocab = ["Laden", "Projekten", "Forschung", "Doktrinen", "Militär","Infrastrukturen","Ressourcen"]
-        shop.tabs_name = bg.l.vocab[0], bg.l.vocab[1], bg.l.vocab[2], bg.l.vocab[3]
+

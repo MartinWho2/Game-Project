@@ -28,16 +28,22 @@ class Game:
         self.s_l = False
         self.s_l_choice = False
 
-        self.buttons = (0, 0, 0)
-        self.font_1 = pygame.font.SysFont('comicsans', int(self.bg.w / 10))
-
         self.white = (255, 255, 255)
         self.green = (0, 255, 0)
         self.blue = (0, 0, 255)
-        self.red = (255, 0, 0)
-        
-        self.tabs_texts=pygame.transform.rotate((self.font_1.render("Hey", True, self.red)), 90)
+        self.red = (255, 0, 0) 
 
+        self.buttons = (0, 0, 0)
+        self.font_1 = pygame.font.SysFont('comicsans', int(self.bg.w / 10))
+        self.font_2 = pygame.font.SysFont("Rockwell", int(self.bg.w/40))
+        self.write_text()
+
+    def write_text(self):
+        for i in range(4):
+            setattr(self,("tab_text_"+str(i)),pygame.transform.rotate((self.font_2.render(self.bg.l.vocab[i], True, self.red)), -90))
+            setattr(self,("tab_text_rect_"+str(i)),getattr(self,("tab_text_"+str(i))).get_rect())
+            getattr(self,("tab_text_rect_"+str(i))).center = (18*self.bg.prop_h,(2*i+1)*self.bg.h/8)
+        
     def update(self):
         self.buttons = pygame.mouse.get_pressed(num_buttons=3)
         # you can also move it with keys
@@ -71,10 +77,20 @@ class Game:
         self.group.draw(self.win)
         self.stuff.display(self.win)
         self.gold.display(self.win)
-        self.win.blit(self.tabs,(0,0))
-        self.win.blit(self.tabs_texts, (100,100) )
+        if not self.shop_open:    
+            self.win.blit(self.tabs,(0,0))
+            for i in range(4):
+                self.win.blit(getattr(self,("tab_text_"+str(i))), getattr(self,("tab_text_rect_"+str(i))))
         if self.shop_open:
             self.shop.draw_shop(self.win, self.bg.w, self.bg.h, self.placeable)
+
+        #for Maison in self.group:
+            #self.gold.add(1)
+        #for Usine in self.group:
+            #self.stuff.add(1)
+        #for Eglise in self.group:
+            #print("Jésus est là!")
+
         
 
     def save_load(self):
@@ -173,10 +189,13 @@ class Game:
                     self.shop.buying = False
                 if e.key == pygame.K_1:
                     self.bg.l.change_language(1, self.bg, self.shop)
+                    self.write_text()
                 if e.key == pygame.K_2:
                     self.bg.l.change_language(2, self.bg, self.shop)
+                    self.write_text()
                 if e.key == pygame.K_3:
                     self.bg.l.change_language(3, self.bg, self.shop)
+                    self.write_text()
             elif e.type == pygame.KEYUP:
                 self.keys[e.key] = False
             elif e.type == pygame.MOUSEBUTTONDOWN:
@@ -185,8 +204,8 @@ class Game:
                     egal = False
                     if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
                         surface = self.shop.what_buying[0]
-                        a = Images(surface,(self.shop.buying_x-self.bg.x)/self.bg.zoom,(self.shop.buying_y-self.bg.y)/self.bg.zoom,self.bg)
-                        self.group.add(a)
+                        globals()[self.shop.what_buying[0]] = Images(surface,(self.shop.buying_x-self.bg.x)/self.bg.zoom,(self.shop.buying_y-self.bg.y)/self.bg.zoom,self.bg)
+                        self.group.add(str(self.shop.what_buying[0]))
                         self.gold.add(self.shop.what_buying[2][0], self.bg.w)
                         self.stuff.add(self.shop.what_buying[2][1], self.bg.w)
                         self.shop.buying = False
@@ -196,7 +215,7 @@ class Game:
                     if self.shop_open and not self.shop.buying and not egal:
                         if pos[0] <= self.bg.w/4:
                             continu = True
-                            for i in range(0, 4):
+                            for i in range(0, 3):
                                 if self.shop.tabs[i].collidepoint(pos[0], pos[1]):
                                     self.shop.tab_open = i
                                     continu = False
@@ -208,12 +227,13 @@ class Game:
                                 self.shop.what_buying = (self.shop.buying_image[int(x)],self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
                                 self.shop.buying = True
                     if not self.shop_open and pos[0] <= self.bg.w * 3 / 160:
-                        if pos[1] <= self.bg.h/4 :
-                            if self.shop.check_collision_tabs(0,pos):
-                                self.shop_open = True
-                        elif pos[1] <= self.bg.h/2 : pass
-                        elif pos[1] <= self.bg.h*3/4: pass
-                        else: pass
+                            tab = self.shop.check_collision_tabs(math.floor(4*pos[1]/self.bg.h),pos)
+                            if tab == 1:
+                                self.shop.open(self.win) 
+                                #self.shop_open = True   
+                            elif tab == 2: print("Projets = True")
+                            elif tab == 3: print("Recherches = True")
+                            elif tab ==4: print("Doctrines = True")
             elif e.type == pygame.MOUSEMOTION:
                 mx, my = pygame.mouse.get_rel()
                 if self.buttons[0] and (self.shop_open is False or pygame.mouse.get_pos()[0] > self.bg.w / 4):
