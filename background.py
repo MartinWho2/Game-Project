@@ -2,8 +2,8 @@ import pygame, math
 
 # Class for the background
 class Background:
-    def __init__(self, screen,language):
-        self.image = pygame.image.load("Images/Maison 3.png")
+    def __init__(self, screen,language,image):
+        self.image = image
         #self.image= pygame.transform.scale(self.image, (25, 25))
         self.x = 0
         self.y = 0

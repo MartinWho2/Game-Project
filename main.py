@@ -4,8 +4,8 @@ from game import Game
 pygame.init()
 clock = pygame.time.Clock()
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
 game = Game(win)
+
 def display_fps():
     "Data that will be rendered and blitted in display"
     font = pygame.font.SysFont(None ,(50))
@@ -32,5 +32,6 @@ def main():
                 game.save_load()
                 pygame.display.flip()
                 game.save_load_events()
+
 
 main()

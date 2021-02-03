@@ -1,5 +1,6 @@
 import pygame
 import math
+import os
 from shop import Shop
 from Langues import Language
 from jauge import Jauge
@@ -11,17 +12,19 @@ from Encode import encode, decode
 
 class Game:
     def __init__(self, win):
-        self.bg = Background(win, Language())
+        self.win = win
+        self.pictures = self.loading()
+        self.bg = Background(win, Language(),self.pictures['Maison 3'])
         self.menu = Menu(self.bg)
         self.shop_open = False
         self.placeable=True
-        self.shop = Shop(self.bg)
+        self.shop = Shop(self.bg,self.pictures['Maison'],self.pictures['Maison2'],self.pictures['Usine'],self.pictures['Eglise'])
         self.group = pygame.sprite.Group()
-        self.gold = Jauge(pygame.image.load('Images/Pièce.png'), 1, 10000, self.bg.h, self.bg.w)
-        self.stuff = Jauge(pygame.image.load('Images/Matériel.png'), 2, 50000000, self.bg.h, self.bg.w)
+        self.gold = Jauge(self.pictures['Pièce'], 1, 10000, self.bg.h, self.bg.w)
+        self.stuff = Jauge(self.pictures['Matériel'], 2, 50000000, self.bg.h, self.bg.w)
         self.keys = {}
-        self.win = win
-        self.tabs = pygame.transform.scale(pygame.image.load('Images/Onglets.png'),(int(36*(self.bg.h/1080)),int(1080 * (self.bg.h/1080))))
+
+        self.tabs = pygame.transform.scale(self.pictures['Onglets'],(int(36*(self.bg.h/1080)),int(1080 * (self.bg.h/1080))))
 
         self.run = True
         self.pause = False
@@ -37,6 +40,26 @@ class Game:
         self.font_1 = pygame.font.SysFont('comicsans', int(self.bg.w / 10))
         self.font_2 = pygame.font.SysFont("Rockwell", int(self.bg.w/40))
         self.write_text()
+
+    def loading(self):
+        percent, list = 0, os.listdir("Images")
+        n, img = len(list), {}
+
+        for i in list:
+            img[str(i)[:-4]] = pygame.image.load("Images/" + i)
+            percent += 1 / n
+            w = self.win.get_width()*percent
+            print(w)
+            pygame.draw.rect(self.win, (255, 255, 255),
+                             pygame.rect.Rect(0, round(self.win.get_height() * 2 / 3), round(w),
+                                              round(self.win.get_height() / 4)))
+            pygame.display.flip()
+            for e in pygame.event.get():
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_w:
+                        pygame.quit()
+                        quit()
+        return img
 
     def write_text(self):
         for i in range(4):
@@ -83,15 +106,13 @@ class Game:
                 self.win.blit(getattr(self,("tab_text_"+str(i))), getattr(self,("tab_text_rect_"+str(i))))
         if self.shop_open:
             self.shop.draw_shop(self.win, self.bg.w, self.bg.h, self.placeable)
-
+       
         #for Maison in self.group:
             #self.gold.add(1)
         #for Usine in self.group:
             #self.stuff.add(1)
         #for Eglise in self.group:
             #print("Jésus est là!")
-
-        
 
     def save_load(self):
         self.win.fill(self.red)
@@ -224,7 +245,7 @@ class Game:
                                 x = 2 * row -2
                                 if pos[0]<=self.bg.w/8: x += 1
                                 else: x+=2
-                                self.shop.what_buying = (self.shop.buying_image[int(x)],self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
+                                self.shop.what_buying = (self.shop.buying_image[int(x)], self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
                                 self.shop.buying = True
                     if not self.shop_open and pos[0] <= self.bg.w * 3 / 160:
                             tab = self.shop.check_collision_tabs(math.floor(4*pos[1]/self.bg.h),pos)

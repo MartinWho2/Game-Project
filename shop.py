@@ -3,7 +3,7 @@ import math
 
 
 class Shop:
-    def __init__(self, bg):
+    def __init__(self, bg,*arg):
         self.surface = pygame.rect.Rect(0, 0, bg.w / 4, bg.h)
         self.tabs = [pygame.rect.Rect(0, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 12, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 6, 0, bg.w / 12, bg.h / 14)]
         self.shop_tabs = []
@@ -13,23 +13,17 @@ class Shop:
         self.image_buying = (0, 0)
         self.bg = bg
         self.what_buying = 0
-        self.buying_image = {
-            1:pygame.image.load("Images/Maison.png"),
-            2:pygame.image.load("Images/Maison2.png"),
-            3:pygame.image.load("Images/Usine.png"),
-            4:pygame.image.load("Images/Eglise.png")
-            }
         self.buying_name = {
-            1:"Maison",
-            2:"Maison2",
-            3:"Usine",
-            4:"Eglise"
+            1: "Maison",
+            2: "Maison2",
+            3: "Usine",
+            4: "Eglise"
             }
         self.buying_prices = {1:(-10,-50),2: (-50,-20),3:(-20,-20), 4:(-40,-20)}
-        self.image_maison = pygame.transform.scale(pygame.image.load("Images/Maison.png"),(int(bg.w / 8), int(bg.w / 8)))
-        self.image_maison2 = pygame.transform.scale(pygame.image.load("Images/Maison2.png"),(int(bg.w / 8), int(bg.w / 8)))
-        self.image_eglise = pygame.transform.scale(pygame.image.load("Images/Usine.png"),(int(bg.w / 8), int(bg.w / 8)))
-        self.image_usine = pygame.transform.scale(pygame.image.load("Images/Eglise.png"),(int(bg.w / 8), int(bg.w / 8)))
+        self.a = 1
+        for i in arg:
+            setattr(self, ("image_" + self.buying_name[self.a]),pygame.transform.scale(i,(int(bg.w / 8), int(bg.w / 8))))
+            self.a += 1
     def draw_shop(self, win, w, h, placeable):
         if not self.buying:
             if self.shop_tab_open == 0:
@@ -41,14 +35,14 @@ class Shop:
             else:
                 pass
             if self.tab_open == 0:
-                win.blit(self.image_maison, (0, self.tabs[0].h))
-                win.blit(self.image_maison2, (int(w / 8), self.tabs[0].h))
-                win.blit(self.image_eglise, (0, int(self.tabs[0].h + w / 8)))
-                win.blit(self.image_usine, (int(w / 8), int(self.tabs[0].h + w / 8)))
-                win.blit(self.image_maison, (0, self.tabs[0].h + w / 4))
-                win.blit(self.image_maison2, (int(w / 8), self.tabs[0].h + w / 4))
-                win.blit(self.image_eglise, (0, int(self.tabs[0].h + 3 * w / 8)))
-                win.blit(self.image_usine, (int(w / 8), int(self.tabs[0].h + 3 * w / 8)))
+                win.blit(self.image_Maison, (0, self.tabs[0].h))
+                win.blit(self.image_Maison2, (int(w / 8), self.tabs[0].h))
+                win.blit(self.image_Eglise, (0, int(self.tabs[0].h + w / 8)))
+                win.blit(self.image_Usine, (int(w / 8), int(self.tabs[0].h + w / 8)))
+                win.blit(self.image_Maison, (0, self.tabs[0].h + w / 4))
+                win.blit(self.image_Maison2, (int(w / 8), self.tabs[0].h + w / 4))
+                win.blit(self.image_Eglise, (0, int(self.tabs[0].h + 3 * w / 8)))
+                win.blit(self.image_Usine, (int(w / 8), int(self.tabs[0].h + 3 * w / 8)))
                 pygame.draw.rect(win, (150, 150, 150), self.tabs[0])
                 pygame.draw.rect(win, (160, 160, 160), self.tabs[1])
                 pygame.draw.rect(win, (150, 150, 150), self.tabs[2])
