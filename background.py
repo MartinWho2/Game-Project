@@ -3,8 +3,8 @@ import pygame, math
 # Class for the background
 class Background:
     def __init__(self, screen,language,image):
+        #définit les caractéristiques du background: son image, ses coordonnées, son zoom, sa hauteur, sa largeur, ses coefficients de proportionnalité en fonction de la taille de la fenêtre, son facteur de taille, son langage
         self.image = image
-        #self.image= pygame.transform.scale(self.image, (25, 25))
         self.x = 0
         self.y = 0
         self.zoom = 1

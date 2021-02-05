@@ -5,7 +5,7 @@ pygame.init()
 clock = pygame.time.Clock()
 win = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 game = Game(win)
-
+#afficher les fps
 def display_fps():
     "Data that will be rendered and blitted in display"
     font = pygame.font.SysFont(None ,(50))
@@ -15,7 +15,7 @@ def main():
 
     while game.run:
         clock.tick(60)
-
+#afficher le jeu
         if not game.pause:
             game.update()
             display_fps()
@@ -23,11 +23,12 @@ def main():
             game.events()
             
         else:
+#afficher le menu du jeu 
             if not game.s_l:
                 game.menu.menu()
                 pygame.display.flip()
                 game.menu_events()
-                
+#afficher le menu de sauvegarde             
             else:
                 game.save_load()
                 pygame.display.flip()
