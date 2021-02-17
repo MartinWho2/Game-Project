@@ -4,18 +4,18 @@ import math
 
 class Shop:
     def __init__(self, bg,*arg):
-        #définit le rectangle du shop, les tabs du shop, le dictionnaire des tabs du shop, le tab ouvert actuellement, si un achat est en train d'être fait, récupère le bg, dictionnaire des images du shop, numéro de l'objet en cours d'achat
+        # définit le rectangle du shop, les tabs du shop, le dictionnaire des tabs du shop, le tab ouvert actuellement, si un achat est en train d'être fait, récupère le bg, dictionnaire des images du shop, numéro de l'objet en cours d'achat
         self.surface = pygame.rect.Rect(0, 0, bg.w / 4, bg.h)
+        self.loading_rect = pygame.rect.Rect(0,0,0, bg.h)
+        self.loading_rect_width = 0
         self.tabs = [pygame.rect.Rect(0, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 12, 0, bg.w / 12, bg.h / 14),pygame.rect.Rect(bg.w / 6, 0, bg.w / 12, bg.h / 14)]
         self.shop_tabs = []
         self.tab_open = 0
         self.shop_tab_open = 0 #utilité à vérifier
         self.buying = False
-        self.image_buying = (0, 0) # utilité à vérifier
         self.bg = bg
-        self.buying_image = {}
         self.what_buying = 0
-        #dictionnaire des noms des bâtiments, dictionnaire des prix des bâtiments
+        # dictionnaire des noms des bâtiments, dictionnaire des prix des bâtiments
         self.buying_name = {
             1: "Maison",
             2: "Maison2",
@@ -23,17 +23,20 @@ class Shop:
             4: "Eglise"
             }
         self.buying_prices = {1:(-10,-50),2: (-50,-20),3:(-20,-20), 4:(-40,-20)}
-        #importation des différentes images
+        # importation des différentes images
         self.a = 1
+        self.buying_image = {}
         for i in arg:
-            setattr(self, ("image_" + self.buying_name[self.a]),pygame.transform.scale(i,(int(bg.w / 8), int(bg.w / 8))))
-            self.buying_image[self.a] = getattr(self,("image_" + self.buying_name[self.a]))
+            setattr(self, ("shop_" + self.buying_name[self.a]),pygame.transform.scale(i,(int(bg.w / 8), int(bg.w / 8))))
+            setattr(self, ("buying_" + self.buying_name[self.a]),i)
+            self.buying_image[self.a] = getattr(self,("buying_" + self.buying_name[self.a]))
             self.a += 1
-#affichage du shop
+        
+    # affichage du shop
     def draw_shop(self, win, w, h, placeable):
-        #si pas en achat
+        # si pas en achat
         if not self.buying:
-            #action en fonction du tab ouvert
+            # action en fonction du tab ouvert
             if self.shop_tab_open == 0:
                 pass
             elif self.tab_open == 1:
@@ -44,14 +47,14 @@ class Shop:
                 pass
             if self.tab_open == 0:
                 #affichage des bâtiments dans le shop
-                win.blit(self.image_Maison, (0, self.tabs[0].h))
-                win.blit(self.image_Maison2, (int(w / 8), self.tabs[0].h))
-                win.blit(self.image_Eglise, (0, int(self.tabs[0].h + w / 8)))
-                win.blit(self.image_Usine, (int(w / 8), int(self.tabs[0].h + w / 8)))
-                win.blit(self.image_Maison, (0, self.tabs[0].h + w / 4))
-                win.blit(self.image_Maison2, (int(w / 8), self.tabs[0].h + w / 4))
-                win.blit(self.image_Eglise, (0, int(self.tabs[0].h + 3 * w / 8)))
-                win.blit(self.image_Usine, (int(w / 8), int(self.tabs[0].h + 3 * w / 8)))
+                win.blit(self.shop_Maison, (0, self.tabs[0].h))
+                win.blit(self.shop_Maison2, (int(w / 8), self.tabs[0].h))
+                win.blit(self.shop_Eglise, (0, int(self.tabs[0].h + w / 8)))
+                win.blit(self.shop_Usine, (int(w / 8), int(self.tabs[0].h + w / 8)))
+                win.blit(self.shop_Maison, (0, self.tabs[0].h + w / 4))
+                win.blit(self.shop_Maison2, (int(w / 8), self.tabs[0].h + w / 4))
+                win.blit(self.shop_Eglise, (0, int(self.tabs[0].h + 3 * w / 8)))
+                win.blit(self.shop_Usine, (int(w / 8), int(self.tabs[0].h + 3 * w / 8)))
                 #affichage des tabs dans le shop
                 pygame.draw.rect(win, (150, 150, 150), self.tabs[0])
                 pygame.draw.rect(win, (160, 160, 160), self.tabs[1])
@@ -68,6 +71,7 @@ class Shop:
         else:
             #définit l'image du bâtiment en cours d'achat, ses coordonnées
             original_image = self.what_buying[0]
+            print(original_image)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
             image = pygame.transform.scale(original_image, (math.floor(original_image.get_width() * self.bg.zoom),
                                                             math.floor(original_image.get_height() * self.bg.zoom)))
             self.buying_x = round(
@@ -88,10 +92,21 @@ class Shop:
                 win.blit(imp_action_image,(self.buying_x,self.buying_y))
 #animation d'ouverture du shop
     def open(self,win):
-        for i in range (1,51):
-            rect = pygame.rect.Rect(0,0,round(self.bg.w/200*i),self.bg.h)
-            print(rect)
-            pygame.draw.rect(win,(150,150,150),rect)
+        if self.loading_rect.width >= self.bg.w/4:
+            self.loading_rect = pygame.rect.Rect(0,0,0,self.bg.h)
+            self.loading_rect_width = 0
+            return 1
+        self.loading_rect_width += self.bg.w/40
+        self.loading_rect.width = round(self.loading_rect_width)
+        pygame.draw.rect(win,(150,150,150),self.loading_rect)
+        
+    def close(self,win):
+        if self.loading_rect_width <= 0:
+            return 'b'
+        self.loading_rect.width = round(self.loading_rect_width)
+        self.loading_rect_width -= self.bg.w/40
+        pygame.draw.rect(win,(150,150,150),self.loading_rect)
+
 #vérification des collisions avec les tabs pour ouvrir le shop
     def check_collision_tabs(self,tab_nmbr,pos):
         p = self.bg.prop_h

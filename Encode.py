@@ -1,10 +1,6 @@
 import random
 
-
-
-
 def encode(text):
-
     f = open('DO_NOT_MODIFY.txt', 'w')
     # Key = CX + 10D + E
     key = (random.randint(3, 7), random.randint(1, 9), random.randint(1, 9))
@@ -49,6 +45,7 @@ def decode():
                 char = (pos - int(key[2]) - 10 * int(key[1])) / int(key[0])
                 message += chr(int(char))
             f.close()
+            print (message)
             return message
         except:
             print("Your save is corrupted. You shouldn't have modified it.")
@@ -60,11 +57,9 @@ def decode():
 #2 : Decode
 #""")
 #    if choice == "1":
-#        file = input("Which file do you want to use ? ")
 #        text = input("Type your text : ")
-#        encode(text, file)
+#        encode(text)
 #    if choice == "2":
-#        file = input("Which file do you want to decode ? ")
-#        decode(file)
+#        decode()
 #    elif choice == 'STOP' or choice == 'stop':
 #        break
