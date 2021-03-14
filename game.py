@@ -1,34 +1,43 @@
 import pygame
 import math
 import os
+import pickle
 from shop import Shop
 from Langues import Language
 from jauge import Jauge
 from images import Images
+from building import Building
 from background import Background
 from Menu import Menu
 from Encode import encode, decode
+
 
 class Game:
     def __init__(self, win):
         # Définit la fenêtre, un dictionnaire avec les images, le background, le menu, si le shop est ouvert, si l'objet en cours d'achat est positionnable, le shop
         self.win = win
         self.pictures = self.loading()
-        self.bg = Background(win, Language(),self.pictures['Maison 3'])
+        self.bg = Background(win, Language(), self.pictures['Maison 3'])
         self.menu = Menu(self.bg)
         self.shop_open = False
         self.shop_opening = 0
         self.placeable = True
-        self.shop = Shop(self.bg,self.pictures['Maison'],self.pictures['Maison2'],self.pictures['Usine'],self.pictures['Eglise'])
-        self.True_dict = {'a':True,1:True,'b':False,2:False}
-        # Définit un groupe de sprite, une jauge pour l'or, une jauge pour le matériel, un dictionnaire pour les touches pressées
-        self.group = pygame.sprite.Group()
+        self.shop = Shop(self.bg, self.pictures['Caserne'], self.pictures['Maison2'], self.pictures['Usine'],
+                         self.pictures['Eglise'])
+        self.True_dict = {'a': True, 1: True, 'b': False, 2: False}
+        # Définit un groupe de sprite, une jauge pour l'or, une jauge pour le matériel,
+        # un dictionnaire pour les touches pressées
+        self.buildings = pygame.sprite.Group()
         self.gold = Jauge(self.pictures['Pièce'], 1, 10000, self.bg.h, self.bg.w)
         self.stuff = Jauge(self.pictures['Matériel'], 2, 50000000, self.bg.h, self.bg.w)
         self.keys = {}
         # Définit les tabs permettant d'accéder au magasin/projets/recherches/doctrines
-        self.tabs = pygame.transform.scale(self.pictures['Onglets'],(int(36*(self.bg.h/1080)),int(1080 * (self.bg.h/1080))))
-        # Définit si le jeu tourne, si le jeu est en pause, si le menu save/load est ouvert, si le choix dans le menu save/load est vrai ou faux
+        self.tabs = pygame.transform.scale(self.pictures['Onglets'],
+                                           (int(36 * (self.bg.h / 1080)), int(1080 * (self.bg.h / 1080))))
+        # Définit une variable permettant de ne pas ouvrir l'interface d'un bâtiment au moment où on l'achète
+        self.bought = False
+        # Définit si le jeu tourne, si le jeu est en pause, si le menu save/load est ouvert,
+        # si le choix dans le menu save/load est vrai ou faux
         self.run = True
         self.pause = False
         self.s_l = False
@@ -37,11 +46,12 @@ class Game:
         self.white = (255, 255, 255)
         self.green = (0, 255, 0)
         self.blue = (0, 0, 255)
-        self.red = (255, 0, 0) 
-        # Définit les boutons pressés de la souris, 2polices d'écriture, affiche une première fois les textes des tabs pour ouvrir le menu
+        self.red = (255, 0, 0)
+        # Définit les boutons pressés de la souris, 2 polices d'écriture,
+        # affiche une première fois les textes des tabs pour ouvrir le menu
         self.buttons = (0, 0, 0)
         self.font_1 = pygame.font.SysFont('comicsans', int(self.bg.w / 10))
-        self.font_2 = pygame.font.SysFont("Rockwell", int(self.bg.w/40))
+        self.font_2 = pygame.font.SysFont("Rockwell", int(self.bg.w / 40))
         self.write_text()
 
     def loading(self):
@@ -53,7 +63,8 @@ class Game:
             img[str(i)[:-4]] = pygame.image.load("Images/" + i)
             percent += 1 / n
             pygame.draw.rect(self.win, (255, 255, 255),
-                             pygame.rect.Rect(0, round(self.win.get_height() * 2 / 3), round(self.win.get_width()*percent),
+                             pygame.rect.Rect(0, round(self.win.get_height() * 2 / 3),
+                                              round(self.win.get_width() * percent),
                                               round(self.win.get_height() / 6)))
             pygame.display.flip()
         return img
@@ -61,10 +72,11 @@ class Game:
     def write_text(self):
         # fonction pour afficher le noms des tabs permettant d'accéder au magasin/projets/recherches/doctrines
         for i in range(4):
-            setattr(self,("tab_text_"+str(i)),pygame.transform.rotate((self.font_2.render(self.bg.l.vocab[i], True, self.red)), -90))
-            setattr(self,("tab_text_rect_"+str(i)),getattr(self,("tab_text_"+str(i))).get_rect())
-            getattr(self,("tab_text_rect_"+str(i))).center = (18*self.bg.prop_h,(2*i+1)*self.bg.h/8)
-        
+            setattr(self, ("tab_text_" + str(i)),
+                    pygame.transform.rotate((self.font_2.render(self.bg.l.vocab[i], True, self.red)), -90))
+            setattr(self, ("tab_text_rect_" + str(i)), getattr(self, ("tab_text_" + str(i))).get_rect())
+            getattr(self, ("tab_text_rect_" + str(i))).center = (18 * self.bg.prop_h, (2 * i + 1) * self.bg.h / 8)
+
     def update(self):
         # remplit la fenêtre
         self.win.fill((0, 0, 0))
@@ -87,33 +99,32 @@ class Game:
             self.bg.y += v.y
         # définit si un bâtiment peut être placé
         self.placeable = True
-        # replace tous les sprites si un déplacement ou un zoom a lieu, vérifie si les sprites ne touchent pas l'objet qui va être construit
-        for sprite in self.group:
-            sprite.replace()
-            a = sprite.move()
-            if a == "REMOVE":
-                self.group.remove(sprite)
-            if self.shop_open:
-                if pygame.Rect.colliderect(sprite.rect,self.shop.rect_buying):
-                    self.placeable = False
-        
         # affiche le background
         self.win.blit(pygame.transform.scale(self.bg.image, (
             math.floor(self.bg.image.get_width() * self.bg.zoom),
             math.floor(self.bg.image.get_height() * self.bg.zoom))),
                       (math.floor(self.bg.x), math.floor(self.bg.y)))
+        # replace tous les sprites si un déplacement ou un zoom a lieu,
+        # vérifie si les sprites ne touchent pas l'objet qui va être construit
+        for sprite in self.buildings:
+            sprite.replace()
+            if self.shop_open:
+                if pygame.Rect.colliderect(sprite.rect, self.shop.rect_buying):
+                    self.placeable = False
+            if sprite.bool_interface:
+                sprite.update_interface(self.win)
         # affiche tous les sprites
-        self.group.draw(self.win)
+        self.buildings.draw(self.win)
         # affiche les jauges
         self.stuff.display(self.win)
         self.gold.display(self.win)
         # affiche les tabs permettants d'accéder au shop
         if not self.shop_open and not self.shop_opening:
-                self.win.blit(self.tabs,(0,0))
-                for i in range(4):
-                    self.win.blit(getattr(self,("tab_text_"+str(i))), getattr(self,("tab_text_rect_"+str(i))))
+            self.win.blit(self.tabs, (0, 0))
+            for i in range(4):
+                self.win.blit(getattr(self, ("tab_text_" + str(i))), getattr(self, ("tab_text_rect_" + str(i))))
         if self.shop_opening:
-            if self.shop_opening == 1 :
+            if self.shop_opening == 1:
                 a = self.shop.open(self.win)
             else:
                 a = self.shop.close(self.win)
@@ -124,13 +135,6 @@ class Game:
         # affiche le shop
         if self.shop_open:
             self.shop.draw_shop(self.win, self.bg.w, self.bg.h, self.placeable)
-        # ajoute des ressources par minute en fonction du nombre de bâtiments
-        #for Maison in self.group:
-            #self.gold.add(1)
-        #for Usine in self.group:
-            #self.stuff.add(1)
-        #for Eglise in self.group:
-            #print("Jésus est là!")
 
     def save_load(self):
         # crée le menu save/load (couleurs, textes, coordonnées des textes, afficher les couleurs, afficher les textes)
@@ -140,7 +144,7 @@ class Game:
         load = self.font_1.render("LOAD", True, (0, 0, 0))
         saveRect, loadRect = save.get_rect(), load.get_rect()
         saveRect.center, loadRect.center = (int(self.bg.w / 4), int(self.bg.h / 2)), (
-        int(self.bg.w * 3 / 4), int(self.bg.h / 2))
+            int(self.bg.w * 3 / 4), int(self.bg.h / 2))
         self.win.blit(save, saveRect)
         self.win.blit(load, loadRect)
 
@@ -169,13 +173,16 @@ class Game:
                     self.win.fill((0, 0, 0))
                 # sauvegarder les données de sauvegarde
                 elif not self.s_l_choice and x < self.bg.w / 2:
-                    encode(str(self.gold.quantity))
+                    # encode(str(self.gold.quantity))
+                    # data = [[ressources], [bâtiments]]
+
                     self.s_l = False
                     self.win.fill((0, 0, 0))
             # si la touche escape est pressée, le menu save/load est fermé
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     self.s_l = False
+                    self.win.fill((0, 0, 0))
 
     def menu_events(self):
         # affichage des textes du menu
@@ -196,7 +203,7 @@ class Game:
                     # vérification d'une éventuelle collision avec un des textes
                     for rectangle in self.menu.rects:
                         if rectangle.collidepoint(x, y) and self.menu.selected != self.menu.rects.index(rectangle):
-# à vérifier                mise en évidence du texte sous la souris
+                            # à vérifier                mise en évidence du texte sous la souris
                             self.menu.selected = self.menu.rects.index(rectangle)
                             setattr(self.menu, 'color_' + str(self.menu.selected), self.green)
                             setattr(self.menu, 'color_' + str((self.menu.selected - 1) % 3), self.white)
@@ -208,18 +215,18 @@ class Game:
                             setattr(self.menu, 'font_' + str((self.menu.selected - 2) % 3),
                                     pygame.font.SysFont('comicsans', int(self.bg.w / 10)))
                             self.menu.event_happens = True
-                            self.win.fill((0,0,0))
-            #si la souris est pressée, récupération des coordonnées 
+                            self.win.fill((0, 0, 0))
+            # si la souris est pressée, récupération des coordonnées
             if e.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
-                #si il y a une collision avec un des textes du menu, ouverture de la page correspondante
-                
+                # si il y a une collision avec un des textes du menu, ouverture de la page correspondante
+
                 if self.menu.rects[self.menu.selected].collidepoint(x, y):
                     self.menu.clicked = self.menu.selected + 1
-            #si la souris est relachée, récupération des coordonnées
+            # si la souris est relachée, récupération des coordonnées
             if e.type == pygame.MOUSEBUTTONUP:
                 x, y = pygame.mouse.get_pos()
-                #si les coordonnées sont les mêmes, exécution de l'action concernée
+                # si les coordonnées sont les mêmes, exécution de l'action concernée
                 if self.menu.rects[self.menu.clicked - 1].collidepoint(x, y):
                     if self.menu.clicked == 1:
                         self.pause = False
@@ -229,7 +236,9 @@ class Game:
                         self.run = False
                         pygame.quit()
                 self.menu.clicked = 0
-
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    self.pause = False
     def events(self):
         # vérification de tous les événements (pas dans le menu)
         for e in pygame.event.get():
@@ -250,9 +259,9 @@ class Game:
                     self.win.fill((0, 0, 0))
                 # touche pour le shop
                 if e.key == pygame.K_k:
-                    if self.shop_open :
+                    if self.shop_open:
                         self.shop_opening = 2
-                        self.shop.loading_rect_width = round(self.bg.w/4)
+                        self.shop.loading_rect_width = round(self.bg.w / 4)
                         self.shop_open = False
                     else:
                         self.shop_opening = 1
@@ -267,68 +276,93 @@ class Game:
                 if e.key == pygame.K_3:
                     self.bg.l.change_language(3, self.bg, self.shop)
                     self.write_text()
-                if e.key == pygame.K_e:
-                    ennemy = Images(self.pictures['Pièce'],(600-self.bg.x)/self.bg.zoom,(400-self.bg.x)/self.bg.zoom,self.bg,immobile=False)
-                    self.group.add(ennemy)
-            #si une touche est relachée
+            # si une touche est relachée
             elif e.type == pygame.KEYUP:
-                #retrait du dictionnaire des touches
+                # retrait du dictionnaire des touches
                 self.keys[e.key] = False
 
-            #si un bouton de la souris est pressé
+            # si un bouton de la souris est pressé
             elif e.type == pygame.MOUSEBUTTONDOWN:
-                #si c'est le boutton 1
+                # si c'est le boutton 1
                 if e.button == 1:
-                    #récupération des coordonnées
-                    pos = pygame.mouse.get_pos()
+                    # récupération de la position et du temps de click
+                    self.pos = pygame.mouse.get_pos()
+                    self.down_click = pygame.time.get_ticks()
+                    # Si une interface est ouverte et qu'on clique sur la croix, ferme l'interface
+                    if round(self.bg.w*7/8) <= self.pos[0] <= round(self.bg.w *109/120) and round(self.bg.h*2/3) <= self.pos[1] <= round(self.bg.h *21/30):
+                        for building in self.buildings:
+                            if building.bool_interface:
+                                building.bool_interface = False
+                    # si le shop est ouvert
                     if self.shop_open:
-                        stop = False
-                        #si un bâtiment est en train d'être acheté, achat du bâtiment sélectionné, ajout dans le groupe des sprites, retrait des ressources de constructions
-                        if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
+                        # si un bâtiment est en train d'être acheté, achat du bâtiment sélectionné, ajout dans le groupe des sprites, retrait des ressources de constructions
+                        if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][
+                            0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
                             surface = self.shop.what_buying[0]
-                            #self.shop.what_buying[0] = Images(surface,(self.shop.buying_x-self.bg.x)/self.bg.zoom,(self.shop.buying_y-self.bg.y)/self.bg.zoom,self.bg)
-                            bâtiment = Images(surface,(self.shop.buying_x-self.bg.x)/self.bg.zoom,(self.shop.buying_y-self.bg.y)/self.bg.zoom,self.bg)
-                            self.group.add(bâtiment)
+                            batiment = Building(surface, (self.shop.buying_x - self.bg.x) / self.bg.zoom,
+                                                (self.shop.buying_y - self.bg.y) / self.bg.zoom,
+                                                self.bg, self.shop.what_buying[1])
+                            self.buildings.add(batiment)
                             self.gold.add(self.shop.what_buying[2][0], self.bg.w)
                             self.stuff.add(self.shop.what_buying[2][1], self.bg.w)
                             self.shop.buying = False
-                            stop = True
+                            # Permet de ne pas ouvrir le menu du bâtiment immédiatement
+                            self.bought = True
                             self.shop.bought = 0
                         # si le shop est ouvert
-                        if not self.shop.buying and not stop:
+                        elif not self.shop.buying:
                             # vérification du point d'impact sur les images des bâtiments
-                            if pos[0] <= self.bg.w/4:
+                            if self.pos[0] <= self.bg.w / 4:
                                 continu = True
                                 for i in range(0, 3):
-                                    if self.shop.tabs[i].collidepoint(pos[0], pos[1]):
+                                    if self.shop.tabs[i].collidepoint(self.pos[0], self.pos[1]):
                                         self.shop.tab_open = i
                                         continu = False
                                 # calcul du bâtiment sélectionné en fonction du point d'impact,
-                                if continu:        
-                                    row = math.ceil((pos[1] - self.bg.h/14) / (self.bg.w/8))
-                                    x = 2 * row -2
-                                    if pos[0] <= self.bg.w/8: x += 1
-                                    else: x += 2
-                                    self.shop.what_buying = (self.shop.buying_image[int(x)], self.shop.buying_name[int(x)],self.shop.buying_prices[int(x)])
+                                if continu:
+                                    row = math.ceil((self.pos[1] - self.bg.h / 14) / (self.bg.w / 8))
+                                    x = 2 * row - 2
+                                    if self.pos[0] <= self.bg.w / 8:
+                                        x += 1
+                                    else:
+                                        x += 2
+                                    self.shop.what_buying = (
+                                        self.shop.buying_image[int(x)], self.shop.buying_name[int(x)],
+                                        self.shop.buying_prices[int(x)])
                                     self.shop.buying = True
-                    #vérification du point d'impact sur les tabs
-                    elif pos[0] <= self.bg.w * 3 / 160:
-                            #si une collision est détectée
-                            tab = self.shop.check_collision_tabs(math.floor(4*pos[1]/self.bg.h),pos)
-                            #exécution de l'action concernée
-                            if tab == 1:
-                                self.shop_opening = 1
-                            elif tab == 2: print("Projets = True")
-                            elif tab == 3: print("Recherches = True")
-                            elif tab ==4: print("Doctrines = True")
+                    # vérification du point d'impact sur les tabs
+                    elif self.pos[0] <= self.bg.w * 3 / 160:
+                        # si une collision est détectée
+                        tab = self.shop.check_collision_tabs(math.floor(4 * self.pos[1] / self.bg.h), self.pos)
+                        # exécution de l'action concernée
+                        if tab == 1:
+                            self.shop_opening = 1
+                        elif tab == 2:
+                            print("Projets = True")
+                        elif tab == 3:
+                            print("Recherches = True")
+                        elif tab == 4:
+                            print("Doctrines = True")
 
-            #permet de bouger le background avec la souris
+            elif e.type == pygame.MOUSEBUTTONUP:
+                if not self.bought:
+                    up_pos = pygame.mouse.get_pos()
+                    vector = pygame.math.Vector2(up_pos[0] - self.pos[0], up_pos[1] - self.pos[1])
+                    if vector.length() < 15:
+                        for building in self.buildings:
+                            if not self.shop.buying and 0 <= self.bg.x + building.gap_x < self.bg.w and 0 <= self.bg.y + building.gap_y < self.bg.h:
+                                if building.rect.collidepoint(up_pos[0], up_pos[1]):
+                                    building.open_interface()
+                else:
+                    self.bought = False
+
+            # permet de bouger le background avec la souris
             elif e.type == pygame.MOUSEMOTION:
                 mx, my = pygame.mouse.get_rel()
                 if self.buttons[0] and (self.shop_open is False or pygame.mouse.get_pos()[0] > self.bg.w / 4):
                     self.bg.x += mx
                     self.bg.y += my
-            #permet de zoomer avec la molette
+            # permet de zoomer avec la molette
             elif e.type == pygame.MOUSEWHEEL:
                 rx, ry = pygame.mouse.get_pos()
                 if self.shop_open is False or pygame.mouse.get_pos()[0] > self.bg.w / 4:

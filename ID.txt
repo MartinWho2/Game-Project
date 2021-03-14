@@ -1,0 +1,18 @@
+Catégorie :
+A (Ressources) :
+    1: Or, 2: Nourriture, 3: Hommes, 4: Matériel, 5: Electricité, 6: Recherche, 7: Moral, 8: Vie_QG, 9: EXP
+B (Bâtiments) :
+    1: Caserne, 2: Tank_factory, 3: Centrale_électrique, 4: Hôpital, 5: Repos, 6: Plane_factory, 7: Usine, 8: Laboratoire, 9: Tour, 10: Radio, 11: Mur, 12: Tranchée, 13: Barbelé, 14: Mine, 15: Route,
+C (Troupes):
+    1: Fantassin, 2: Mitrailleur, 3: Sniper, 4: Tank, 5: Avion, 6: Artillerie, 7: Bombardier
+D (Troupes ennemies) :
+    1: Fantassin, 2: Mitrailleur, 3: Sniper, 4: Tank, 5: Avion, 6: Artillerie, 7: Bombardier
+E (Doctrines actives) :
+    A VOIR SELON LES DOCTRINES
+F (Projets actifs):
+    A VOIR
+G (Recherche actives):
+    A VOIR
+
+
+P. EX. : B7 => Usine, D1 => fantassin ennemi
