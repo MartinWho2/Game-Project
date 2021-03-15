@@ -36,6 +36,7 @@ class Game:
                                            (int(36 * (self.bg.h / 1080)), int(1080 * (self.bg.h / 1080))))
         # Définit une variable permettant de ne pas ouvrir l'interface d'un bâtiment au moment où on l'achète
         self.bought = False
+        self.interface_on = False
         # Définit si le jeu tourne, si le jeu est en pause, si le menu save/load est ouvert,
         # si le choix dans le menu save/load est vrai ou faux
         self.run = True
@@ -104,6 +105,8 @@ class Game:
             math.floor(self.bg.image.get_width() * self.bg.zoom),
             math.floor(self.bg.image.get_height() * self.bg.zoom))),
                       (math.floor(self.bg.x), math.floor(self.bg.y)))
+        # affiche tous les sprites
+        self.buildings.draw(self.win)
         # replace tous les sprites si un déplacement ou un zoom a lieu,
         # vérifie si les sprites ne touchent pas l'objet qui va être construit
         for sprite in self.buildings:
@@ -113,8 +116,7 @@ class Game:
                     self.placeable = False
             if sprite.bool_interface:
                 sprite.update_interface(self.win)
-        # affiche tous les sprites
-        self.buildings.draw(self.win)
+
         # affiche les jauges
         self.stuff.display(self.win)
         self.gold.display(self.win)
@@ -289,7 +291,7 @@ class Game:
                     self.pos = pygame.mouse.get_pos()
                     self.down_click = pygame.time.get_ticks()
                     # Si une interface est ouverte et qu'on clique sur la croix, ferme l'interface
-                    if round(self.bg.w*7/8) <= self.pos[0] <= round(self.bg.w *109/120) and round(self.bg.h*2/3) <= self.pos[1] <= round(self.bg.h *21/30):
+                    if round(self.bg.w*7/8) <= self.pos[0] <= round(self.bg.w *109/120) and round(self.bg.h*2/3) <= self.pos[1] <= (round(self.bg.h*2/3)+round(self.bg.w/30)):
                         for building in self.buildings:
                             if building.bool_interface:
                                 building.bool_interface = False
@@ -345,14 +347,28 @@ class Game:
                             print("Doctrines = True")
 
             elif e.type == pygame.MOUSEBUTTONUP:
+                # Si on ne vient pas d'acheter un bâtiment
                 if not self.bought:
+                    # Récupération de la position de la souris et création d'un vecteur entre le clic et le déclic
                     up_pos = pygame.mouse.get_pos()
                     vector = pygame.math.Vector2(up_pos[0] - self.pos[0], up_pos[1] - self.pos[1])
+                    # Si le vecteur est petit
                     if vector.length() < 15:
+                        # Pour chaque bâtiment
                         for building in self.buildings:
+                            # Si le bâtiment est visible à l'écran
                             if not self.shop.buying and 0 <= self.bg.x + building.gap_x < self.bg.w and 0 <= self.bg.y + building.gap_y < self.bg.h:
+                                # Si on a cliqué dessus
                                 if building.rect.collidepoint(up_pos[0], up_pos[1]):
+                                    # Ouvre l'interface du bâtiment et définit qu'un interface est ouverte
+                                    if self.interface_on:
+                                        for chose in self.buildings:
+                                            if chose.bool_interface:
+                                                chose.bool_interface = False
+                                                break
                                     building.open_interface()
+                                    self.interface_on = True
+                                    break
                 else:
                     self.bought = False
 

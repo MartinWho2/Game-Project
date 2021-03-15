@@ -1,4 +1,5 @@
 import pygame
+import random
 from images import Images
 
 
@@ -11,8 +12,8 @@ class Building(Images):
         self.bool_interface = False
         # Définit la surface de l'interface
         self.interface = pygame.Surface((round(self.bg.w/8),round(self.bg.h/3)))
-        self.interface.set_alpha(130)
-        self.interface.fill((150, 150, 150))
+        self.interface.set_alpha(255)
+        self.interface.fill((random.randint(0,255), random.randint(0,255), random.randint(0,255)))
         # Croix pour fermer
         self.croix = pygame.Surface((round(self.bg.w/30),round(self.bg.w/30)))
         self.croix.fill((255, 0, 0))
