@@ -9,7 +9,7 @@ from images import Images
 from building import Building
 from background import Background
 from Menu import Menu
-from Encode import encode, decode
+from Encode import encode, get_words, decoding
 
 
 class Game:
@@ -18,6 +18,11 @@ class Game:
         self.win = win
         self.pictures = self.loading()
         self.bg = Background(win, Language(), self.pictures['Maison 3'])
+        self.dict_loading = {'A':'Caserne','B': 'Tank_factory','C':'Centrale_electrique','D':'Hopital',
+                          'E':'Repos','F':'Plane_factory', 'G': 'Usine', 'H': 'Laboratoire', 'I': 'Tour',
+                          'J':'Radio','K':'Mur','L':'Tranchee','M': 'Barbele', 'N': 'Mine', 'O':'Route',
+                           'P':'Immeuble', 'Q': 'Immeuble_2','R': 'Immeuble_3', 'S': 'Townhall',
+                          'T':'Eglise', 'U': 'Banque', 'V': 'Maison', 'W':'Maison2','X':'Maison_3'}
         self.menu = Menu(self.bg)
         self.shop_open = False
         self.shop_opening = 0
@@ -169,15 +174,28 @@ class Game:
                 x = pygame.mouse.get_pos()[0]
                 # charger les données de sauvegarde
                 if self.s_l_choice and x > self.bg.w / 2:
-                    self.gold.quantity = int(decode())
+                    infos = decoding()
+                    print(infos)
+                    self.buildings.empty()
+                    self.gold.quantity, self.stuff.quantity = infos[0]
                     self.gold.add(0, self.bg.w)
+                    self.stuff.add(0,self.bg.w)
+                    self.bg.x,self.bg.y, self.bg.zoom = infos[1]
+                    for b in infos[2]:
+                        type = self.dict_loading[b[0][0]]
+                        image = self.pictures[type]
+                        batiment = Building(image,b[1],b[2],self.bg,type)
+                        self.buildings.add(batiment)
                     self.s_l = False
                     self.win.fill((0, 0, 0))
                 # sauvegarder les données de sauvegarde
                 elif not self.s_l_choice and x < self.bg.w / 2:
-                    # encode(str(self.gold.quantity))
-                    # data = [[ressources], [bâtiments]]
-
+                    resources = [self.gold.quantity, self.stuff.quantity]
+                    building = []
+                    for b in self.buildings:
+                        building.append([b.type,b.gap_x,b.gap_y])
+                    data = [resources,[self.bg.x,self.bg.y,self.bg.zoom], building]
+                    encode(data)
                     self.s_l = False
                     self.win.fill((0, 0, 0))
             # si la touche escape est pressée, le menu save/load est fermé
@@ -241,6 +259,7 @@ class Game:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     self.pause = False
+
     def events(self):
         # vérification de tous les événements (pas dans le menu)
         for e in pygame.event.get():
@@ -291,15 +310,15 @@ class Game:
                     self.pos = pygame.mouse.get_pos()
                     self.down_click = pygame.time.get_ticks()
                     # Si une interface est ouverte et qu'on clique sur la croix, ferme l'interface
-                    if round(self.bg.w*7/8) <= self.pos[0] <= round(self.bg.w *109/120) and round(self.bg.h*2/3) <= self.pos[1] <= (round(self.bg.h*2/3)+round(self.bg.w/30)):
+                    if round(self.bg.w * 7 / 8) <= self.pos[0] <= round(self.bg.w * 109 / 120) and round(
+                            self.bg.h * 2 / 3) <= self.pos[1] <= (round(self.bg.h * 2 / 3) + round(self.bg.w / 30)):
                         for building in self.buildings:
                             if building.bool_interface:
                                 building.bool_interface = False
                     # si le shop est ouvert
                     if self.shop_open:
                         # si un bâtiment est en train d'être acheté, achat du bâtiment sélectionné, ajout dans le groupe des sprites, retrait des ressources de constructions
-                        if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][
-                            0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
+                        if self.shop.buying and self.gold.quantity + self.shop.what_buying[2][0] >= 0 and self.stuff.quantity + self.shop.what_buying[2][1] >= 0 and self.placeable:
                             surface = self.shop.what_buying[0]
                             batiment = Building(surface, (self.shop.buying_x - self.bg.x) / self.bg.zoom,
                                                 (self.shop.buying_y - self.bg.y) / self.bg.zoom,
@@ -320,6 +339,8 @@ class Game:
                                     if self.shop.tabs[i].collidepoint(self.pos[0], self.pos[1]):
                                         self.shop.tab_open = i
                                         continu = False
+                                        break
+
                                 # calcul du bâtiment sélectionné en fonction du point d'impact,
                                 if continu:
                                     row = math.ceil((self.pos[1] - self.bg.h / 14) / (self.bg.w / 8))
